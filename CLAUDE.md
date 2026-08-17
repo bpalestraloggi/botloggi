@@ -4,35 +4,37 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 
 ## Repository Overview
 
-**botloggi** is a near-empty repository (`Repositório Prado`). At the time of writing, the only tracked file besides this one is `README.md`. There is no application code, build system, package manifest, test suite, lint configuration, or CI workflow yet.
+**botloggi** (`Repositório Prado`) is a Python CLI application scaffolded with [uv](https://docs.astral.sh/uv/), pytest, and ruff. The CLI itself is currently a placeholder (`botloggi` prints a stub message) — real functionality is still to be built.
 
-Treat this as a greenfield repo: any conventions below are seed defaults to be revised once the project's real shape is decided.
-
-## Current Contents
+## Directory Layout
 
 | Path | Purpose |
 | --- | --- |
-| `README.md` | One-line description (`# botloggi` / `Repositório Prado`) |
-| `CLAUDE.md` | This file |
+| `src/botloggi/` | Package source (`cli.py` holds the entry point `main()`) |
+| `tests/` | pytest test suite |
+| `pyproject.toml` | Project metadata, dependencies, ruff/pytest config |
+| `uv.lock` | Locked dependency versions (commit this file) |
+| `README.md` | User-facing usage instructions |
+
+## Install / Build / Test / Lint
+
+```sh
+uv sync               # install deps into .venv
+uv run botloggi        # run the CLI
+uv run pytest          # run tests
+uv run ruff check .     # lint
+uv run ruff format .    # format
+```
 
 ## Default Branch & Working Branch
 
 - Default branch: `main`
-- Session work branch: `claude/add-claude-documentation-jxbfp` — push all changes here and open a PR against `main`.
-
-## Suggested Workflow Until the Stack Is Chosen
-
-- Before adding code, confirm the language/runtime/framework with the user.
-- Once a stack is picked, replace this file with a real CLAUDE.md describing:
-  - Project purpose
-  - Directory layout
-  - Install / build / test / lint commands
-  - Code style and commit conventions
-  - CI and release process
-- Keep this file in sync with the codebase whenever conventions change.
+- Session work branch: `claude/claude-rc-vccj8v` — push all changes here and open a PR against `main`.
 
 ## Conventions for AI Assistants
 
-- Do not invent commands or dependencies — if there is no `package.json` / `pyproject.toml` / `go.mod` / etc., there is no build to run.
-- Prefer asking the user before scaffolding a stack; otherwise propose options.
-- When the project starts taking shape, rewrite this document with concrete commands and structure rather than leaving these placeholders.
+- Use `uv` for all dependency and environment management — don't reach for plain `pip`/`venv` or another package manager.
+- Keep the CLI entry point in `src/botloggi/cli.py`; add new subcommands/logic as modules under `src/botloggi/` and wire them in from there.
+- Add a test under `tests/` for new behavior; keep tests minimal and focused.
+- Run `uv run ruff check .` and `uv run pytest` before considering a change complete.
+- Keep this file in sync with the codebase whenever conventions or structure change.
