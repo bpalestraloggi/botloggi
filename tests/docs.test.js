@@ -21,6 +21,10 @@ function extractObjectLiteral(source, variableName) {
   assert.notStrictEqual(objectEnd, -1, `Could not find the end of "${variableName}".`);
 
   const objectLiteral = source.slice(objectStart, objectEnd + 1);
+  assert.ok(
+    !/(^|[^\w$])(undefined|NaN|Infinity)(?=[^\w$]|$)|\[\s*,|,\s*,/.test(objectLiteral),
+    `"${variableName}" contains JavaScript-only values that this test intentionally does not support.`
+  );
   const jsonLiteral = normalizeJavaScriptObjectLiteral(objectLiteral).replace(
     /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g,
     '$1"$2"$3'
@@ -187,9 +191,7 @@ function extractReadmeAreas(markdown) {
   return Object.fromEntries(
     [...markdown.matchAll(/^\s{2,}-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
       area,
-      useCases.trim() === ''
-        ? []
-        : useCases.split(/\s*,\s*/).map((useCase) => useCase.trim()),
+      useCases.trim(),
     ])
   );
 }
@@ -231,12 +233,17 @@ test('README dashboard areas can be parsed', () => {
 test('README area parsing preserves empty use-case lists', () => {
   assert.deepStrictEqual(
     extractReadmeAreas('    - **Financeiro** — '),
-    { Financeiro: [] }
+    { Financeiro: '' }
   );
 });
 
 test('README dashboard areas match the source data in index.html', () => {
-  assert.deepStrictEqual(extractReadmeAreas(readme), getDashboardFixture().dashboardData);
+  const {dashboardData} = getDashboardFixture();
+  const expectedReadmeAreas = Object.fromEntries(
+    Object.entries(dashboardData).map(([area, useCases]) => [area, useCases.join(', ')])
+  );
+
+  assert.deepStrictEqual(extractReadmeAreas(readme), expectedReadmeAreas);
 });
 
 test('Dashboard KPI cards match the source data', () => {
@@ -254,9 +261,7 @@ test('Dashboard KPI cards match the source data', () => {
 
 test('README best-practice count matches the page', () => {
   const {practicesCount} = getDashboardFixture();
-  const match = readme.match(
-    /^- \*\*Como usar a IA da maneira correta\*\* — (\d+) boas práticas .*$/m
-  );
+  const match = readme.match(/^\s*-\s+\*\*[^*]+\*\* — (\d+) boas práticas\b.*$/m);
 
   assert.ok(match, 'Could not find the best-practices summary in README.md.');
   assert.strictEqual(Number(match[1]), practicesCount);
