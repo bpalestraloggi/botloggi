@@ -361,12 +361,22 @@ test('README dashboard areas match the source data in index.html', () => {
   const expectedReadmeAreas = Object.fromEntries(
     Object.entries(dashboardData).map(([area, useCases]) => [area, useCases.join(', ')])
   );
-  const readmeAreas = Object.fromEntries(
-    Object.entries(extractReadmeAreas(readme)).filter(([area]) => area in dashboardData)
+  const matchingReadmeAreas = Object.fromEntries(
+    Object.entries(extractReadmeAreas(readme)).filter(([area]) =>
+      Object.hasOwn(dashboardData, area)
+    )
+  );
+  const sortedExpectedAreas = Object.keys(expectedReadmeAreas).sort((leftArea, rightArea) =>
+    leftArea.localeCompare(rightArea)
+  );
+  const sortedReadmeAreas = Object.keys(matchingReadmeAreas).sort((leftArea, rightArea) =>
+    leftArea.localeCompare(rightArea)
   );
 
+  assert.deepStrictEqual(sortedReadmeAreas, sortedExpectedAreas);
+
   assert.deepStrictEqual(
-    Object.entries(readmeAreas).sort(([leftArea], [rightArea]) =>
+    Object.entries(matchingReadmeAreas).sort(([leftArea], [rightArea]) =>
       leftArea.localeCompare(rightArea)
     ),
     Object.entries(expectedReadmeAreas).sort(([leftArea], [rightArea]) =>
