@@ -189,7 +189,7 @@ function extractReadmeAreas(markdown) {
       area,
       useCases.trim() === ''
         ? []
-        : useCases.split(', ').map((useCase) => useCase.trim()),
+        : useCases.split(/\s*,\s*/).map((useCase) => useCase.trim()),
     ])
   );
 }
