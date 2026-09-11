@@ -22,8 +22,9 @@ function extractObjectLiteral(source, variableName) {
   assert.notStrictEqual(objectEnd, -1, `Could not find the end of "${variableName}".`);
 
   const objectLiteral = source.slice(objectStart, objectEnd + 1);
+  const unsupportedSyntax = stripStringsAndComments(objectLiteral);
   assert.ok(
-    !/(^|[^\w$])(undefined|NaN|Infinity)(?=[^\w$]|$)|\[\s*,|,\s*,/.test(objectLiteral),
+    !/(^|[^\w$])(undefined|NaN|Infinity)(?=[^\w$]|$)|\[\s*,|,\s*,/.test(unsupportedSyntax),
     `"${variableName}" contains JavaScript-only values that this test intentionally does not support.`
   );
   const jsonLiteral = quoteBareObjectKeys(normalizeJavaScriptObjectLiteral(objectLiteral));
@@ -115,6 +116,85 @@ function normalizeJavaScriptObjectLiteral(source) {
   }
 
   return normalized.replace(/,(\s*[}\]])/g, '$1');
+}
+
+function stripStringsAndComments(source) {
+  let normalized = '';
+  let index = 0;
+  let quote = null;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  while (index < source.length) {
+    const current = source[index];
+    const next = source[index + 1];
+
+    if (inLineComment) {
+      if (current === '\n') {
+        inLineComment = false;
+        normalized += current;
+      } else {
+        normalized += ' ';
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (current === '*' && next === '/') {
+        inBlockComment = false;
+        normalized += '  ';
+        index += 2;
+        continue;
+      }
+
+      normalized += current === '\n' ? '\n' : ' ';
+      index += 1;
+      continue;
+    }
+
+    if (quote) {
+      if (current === '\\') {
+        normalized += '  ';
+        index += 2;
+        continue;
+      }
+
+      if (current === quote) {
+        quote = null;
+      }
+
+      normalized += current === '\n' ? '\n' : ' ';
+      index += 1;
+      continue;
+    }
+
+    if (current === '/' && next === '/') {
+      inLineComment = true;
+      normalized += '  ';
+      index += 2;
+      continue;
+    }
+
+    if (current === '/' && next === '*') {
+      inBlockComment = true;
+      normalized += '  ';
+      index += 2;
+      continue;
+    }
+
+    if (current === "'" || current === '"') {
+      quote = current;
+      normalized += '0';
+      index += 1;
+      continue;
+    }
+
+    normalized += current;
+    index += 1;
+  }
+
+  return normalized;
 }
 
 function quoteBareObjectKeys(source) {
@@ -354,6 +434,13 @@ test('README area parsing preserves empty use-case lists', () => {
     extractReadmeAreas('    - **Financeiro** — '),
     { Financeiro: '' }
   );
+});
+
+test('README area parsing requires the documented em dash separator', () => {
+  assert.deepStrictEqual(extractReadmeAreas('- **Financeiro** — Caixa'), {
+    Financeiro: 'Caixa',
+  });
+  assert.deepStrictEqual(extractReadmeAreas('- **Financeiro** - Caixa'), {});
 });
 
 test('README dashboard areas match the source data in index.html', () => {
