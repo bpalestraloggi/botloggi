@@ -25,10 +25,7 @@ function extractObjectLiteral(source, variableName) {
     !/(^|[^\w$])(undefined|NaN|Infinity)(?=[^\w$]|$)|\[\s*,|,\s*,/.test(objectLiteral),
     `"${variableName}" contains JavaScript-only values that this test intentionally does not support.`
   );
-  const jsonLiteral = normalizeJavaScriptObjectLiteral(objectLiteral).replace(
-    /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g,
-    '$1"$2"$3'
-  );
+  const jsonLiteral = quoteBareObjectKeys(normalizeJavaScriptObjectLiteral(objectLiteral));
 
   return JSON.parse(jsonLiteral);
 }
@@ -117,6 +114,79 @@ function normalizeJavaScriptObjectLiteral(source) {
   }
 
   return normalized.replace(/,(\s*[}\]])/g, '$1');
+}
+
+function quoteBareObjectKeys(source) {
+  let normalized = '';
+
+  for (let index = 0; index < source.length; index += 1) {
+    const current = source[index];
+
+    if (current === '"') {
+      normalized += current;
+      index += 1;
+
+      while (index < source.length) {
+        normalized += source[index];
+
+        if (source[index] === '\\') {
+          index += 1;
+          normalized += source[index] ?? '';
+        } else if (source[index] === '"') {
+          break;
+        }
+
+        index += 1;
+      }
+
+      continue;
+    }
+
+    normalized += current;
+
+    if (current !== '{' && current !== ',') {
+      continue;
+    }
+
+    let cursor = index + 1;
+    let whitespace = '';
+
+    while (/\s/.test(source[cursor] ?? '')) {
+      whitespace += source[cursor];
+      cursor += 1;
+    }
+
+    if (!/[A-Za-z_$]/.test(source[cursor] ?? '')) {
+      normalized += whitespace;
+      index = cursor - 1;
+      continue;
+    }
+
+    let key = '';
+
+    while (/[\w$]/.test(source[cursor] ?? '')) {
+      key += source[cursor];
+      cursor += 1;
+    }
+
+    let suffixWhitespace = '';
+
+    while (/\s/.test(source[cursor] ?? '')) {
+      suffixWhitespace += source[cursor];
+      cursor += 1;
+    }
+
+    if (source[cursor] !== ':') {
+      normalized += `${whitespace}${key}${suffixWhitespace}`;
+      index = cursor - 1;
+      continue;
+    }
+
+    normalized += `${whitespace}"${key}"${suffixWhitespace}`;
+    index = cursor - 1;
+  }
+
+  return normalized;
 }
 
 function findMatchingBrace(source, startIndex) {
