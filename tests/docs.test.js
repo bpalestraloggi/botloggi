@@ -275,6 +275,14 @@ function extractSectionText(source, className) {
   return match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+function countElementsWithClass(source, tagName, className) {
+  return [...source.matchAll(new RegExp(`<${tagName}([^>]*)>`, 'g'))].filter(([, attributes]) => {
+    const classMatch = attributes.match(/\bclass=(["'])([^"']*)\1/);
+
+    return classMatch?.[2].split(/\s+/).includes(className);
+  }).length;
+}
+
 function extractReadmeAreas(markdown) {
   return Object.fromEntries(
     [...markdown.matchAll(/^\s{2,}-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
@@ -292,7 +300,7 @@ function getDashboardFixture() {
     0
   );
   const activeAreas = Object.values(dashboardData).filter((useCases) => useCases.length > 0).length;
-  const practicesCount = [...html.matchAll(/<div class="practice">/g)].length;
+  const practicesCount = countElementsWithClass(html, 'div', 'practice');
 
   return {
     dashboardData,
