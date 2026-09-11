@@ -185,9 +185,11 @@ function findMatchingBrace(source, startIndex) {
 
 function extractReadmeAreas(markdown) {
   return Object.fromEntries(
-    [...markdown.matchAll(/^  - \*\*(.+?)\*\* — (.+)$/gm)].map(([, area, useCases]) => [
+    [...markdown.matchAll(/^  - \*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
       area,
-      useCases.split(', ').map((useCase) => useCase.trim()),
+      useCases.trim() === ''
+        ? []
+        : useCases.split(', ').map((useCase) => useCase.trim()),
     ])
   );
 }
@@ -213,6 +215,13 @@ const activeAreasPercentage =
 
 test('README dashboard areas can be parsed', () => {
   assert.ok(Object.keys(readmeAreas).length > 0);
+});
+
+test('README area parsing preserves empty use-case lists', () => {
+  assert.deepStrictEqual(
+    extractReadmeAreas('  - **Financeiro** — '),
+    { Financeiro: [] }
+  );
 });
 
 test('README dashboard areas match the source data in index.html', () => {
