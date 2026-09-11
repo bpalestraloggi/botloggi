@@ -318,6 +318,37 @@ test('README dashboard areas can be parsed', () => {
   assert.ok(Object.keys(extractReadmeAreas(readme)).length > 0);
 });
 
+test('findMatchingBrace ignores braces inside strings and comments', () => {
+  const source = `{ text: "}", /* } */ nested: { ok: true } } trailing`;
+
+  assert.strictEqual(findMatchingBrace(source, 0), source.indexOf(' trailing') - 1);
+});
+
+test('extractObjectLiteral parses supported JavaScript object syntax safely', () => {
+  const source = `const data = {
+    // comment
+    area: ['One', 'Two',],
+    nested: {
+      label: "{ok}"
+    }
+  };`;
+
+  assert.deepStrictEqual(extractObjectLiteral(source, 'data'), {
+    area: ['One', 'Two'],
+    nested: {
+      label: '{ok}',
+    },
+  });
+});
+
+test('extractObjectLiteral accepts flexible spacing around declarations', () => {
+  const source = `const   data\t =\t{ item: ["value"] };`;
+
+  assert.deepStrictEqual(extractObjectLiteral(source, 'data'), {
+    item: ['value'],
+  });
+});
+
 test('README area parsing preserves empty use-case lists', () => {
   assert.deepStrictEqual(
     extractReadmeAreas('    - **Financeiro** — '),
