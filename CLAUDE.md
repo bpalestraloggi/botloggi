@@ -29,7 +29,7 @@ uv run ruff format .    # format
 ## Default Branch & Working Branch
 
 - Default branch: `main`
-- Session work branch: `claude/claude-rc-vccj8v` — push all changes here and open a PR against `main`.
+- Push changes to a feature branch and open a PR against `main`.
 
 ## Conventions for AI Assistants
 
