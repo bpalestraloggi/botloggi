@@ -8,7 +8,9 @@ const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
 const html = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 
 function extractObjectLiteral(source, variableName) {
-  const declaration = new RegExp(`const\\s+${escapeRegExp(variableName)}\\s*=\\s*`);
+  const declaration = new RegExp(
+    `(?:^|[^\\w$.])(?:(?:const|let|var)\\s+)?${escapeRegExp(variableName)}\\s*=\\s*`
+  );
   const declarationMatch = source.match(declaration);
   const declarationIndex = declarationMatch?.index ?? -1;
 
@@ -67,16 +69,28 @@ function normalizeJavaScriptObjectLiteral(source) {
 
     if (quote) {
       if (current === '\\') {
-        const escaped = next ?? '';
+        const escaped = next;
+
+        if (escaped === undefined) {
+          normalized += '\\\\';
+          index += 1;
+          continue;
+        }
+
+        if (escaped === 'u' && /^[\da-fA-F]{4}$/.test(source.slice(index + 2, index + 6))) {
+          normalized += `\\u${source.slice(index + 2, index + 6)}`;
+          index += 6;
+          continue;
+        }
 
         if (escaped === quote) {
           normalized += escaped === '"' ? '\\"' : escaped;
         } else if (escaped === '"') {
           normalized += '\\"';
-        } else if ('\\/bfnrtu'.includes(escaped)) {
+        } else if ('\\/bfnrt'.includes(escaped)) {
           normalized += `\\${escaped}`;
         } else {
-          normalized += `\\${escaped}`;
+          normalized += escaped === '"' ? '\\"' : escaped;
         }
 
         index += 2;
