@@ -227,7 +227,9 @@ test('Dashboard KPI cards match the source data', () => {
 });
 
 test('README best-practice count matches the page', () => {
-  const match = readme.match(/- \*\*Como usar a IA da maneira correta\*\* — (\d+) boas práticas/);
+  const match = readme.match(
+    /^- \*\*Como usar a IA da maneira correta\*\* — (\d+) boas práticas .*$/m
+  );
 
   assert.ok(match, 'Could not find the best-practices summary in README.md.');
   assert.strictEqual(Number(match[1]), practicesCount);
