@@ -8,12 +8,39 @@ const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
 const html = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 
 function extractObjectLiteral(source, variableName) {
-  const match = source.match(
-    new RegExp(`const\\s+${variableName}\\s*=\\s*(\\{[\\s\\S]*?\\n\\});`)
+  const declaration = `const ${variableName} =`;
+  const declarationIndex = source.indexOf(declaration);
+
+  assert.notStrictEqual(declarationIndex, -1, `Could not find "${variableName}" in index.html.`);
+
+  const objectStart = source.indexOf('{', declarationIndex);
+  assert.notStrictEqual(objectStart, -1, `Could not find the start of "${variableName}".`);
+
+  let depth = 0;
+  let objectEnd = -1;
+
+  for (let index = objectStart; index < source.length; index += 1) {
+    if (source[index] === '{') {
+      depth += 1;
+    } else if (source[index] === '}') {
+      depth -= 1;
+
+      if (depth === 0) {
+        objectEnd = index;
+        break;
+      }
+    }
+  }
+
+  assert.notStrictEqual(objectEnd, -1, `Could not find the end of "${variableName}".`);
+
+  const objectLiteral = source.slice(objectStart, objectEnd + 1);
+  const jsonLiteral = objectLiteral.replace(
+    /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g,
+    '$1"$2"$3'
   );
 
-  assert.ok(match, `Could not find "${variableName}" in index.html.`);
-  return Function(`return (${match[1]});`)();
+  return JSON.parse(jsonLiteral);
 }
 
 function extractReadmeAreas(markdown) {
