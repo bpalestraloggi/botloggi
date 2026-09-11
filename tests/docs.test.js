@@ -187,6 +187,15 @@ function findMatchingBrace(source, startIndex) {
   return -1;
 }
 
+function extractSectionText(source, className) {
+  const match = source.match(
+    new RegExp(`<section[^>]*class="[^"]*${className}[^"]*"[^>]*>([\\s\\S]*?)<\\/section>`)
+  );
+
+  assert.ok(match, `Could not find the "${className}" section in index.html.`);
+  return match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function extractReadmeAreas(markdown) {
   return Object.fromEntries(
     [...markdown.matchAll(/^\s{2,}-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
@@ -196,17 +205,8 @@ function extractReadmeAreas(markdown) {
   );
 }
 
-function extractKpis(source) {
-  return [
-    ...source.matchAll(
-      /<div class="kpi"[^>]*>\s*<div class="v"[^>]*>([^<]+)<\/div>\s*<div class="l"[^>]*>([^<]+)<\/div>\s*<\/div>/g
-    ),
-  ].map(([, value, label]) => ({ value, label }));
-}
-
 function getDashboardFixture() {
   const dashboardData = extractObjectLiteral(html, 'data');
-  const kpis = extractKpis(html);
   const totalAreas = Object.keys(dashboardData).length;
   const totalUseCases = Object.values(dashboardData).reduce(
     (count, useCases) => count + useCases.length,
@@ -217,7 +217,7 @@ function getDashboardFixture() {
 
   return {
     dashboardData,
-    kpis,
+    kpisText: extractSectionText(html, 'kpis'),
     practicesCount,
     activeAreasPercentage:
       totalAreas === 0 ? '0%' : `${Math.round((activeAreas / totalAreas) * 100)}%`,
@@ -247,16 +247,13 @@ test('README dashboard areas match the source data in index.html', () => {
 });
 
 test('Dashboard KPI cards match the source data', () => {
-  const {activeAreasPercentage, kpis, practicesCount, totalAreas, totalUseCases} =
+  const {activeAreasPercentage, kpisText, practicesCount, totalAreas, totalUseCases} =
     getDashboardFixture();
-  const expectedKpis = [
-    {label: 'Áreas AI Driven', value: String(totalAreas)},
-    {label: 'Casos de uso mapeados', value: String(totalUseCases)},
-    {label: 'Áreas com IA ativa', value: activeAreasPercentage},
-    {label: 'Boas práticas-guia', value: String(practicesCount)},
-  ];
 
-  assert.deepStrictEqual(kpis, expectedKpis);
+  assert.match(kpisText, new RegExp(`\\b${totalAreas}\\s+Áreas AI Driven\\b`));
+  assert.match(kpisText, new RegExp(`\\b${totalUseCases}\\s+Casos de uso mapeados\\b`));
+  assert.match(kpisText, new RegExp(`\\b${activeAreasPercentage.replace('%', '\\%')}\\s+Áreas com IA ativa\\b`));
+  assert.match(kpisText, new RegExp(`\\b${practicesCount}\\s+Boas práticas-guia\\b`));
 });
 
 test('README best-practice count matches the page', () => {
