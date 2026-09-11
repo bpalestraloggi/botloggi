@@ -193,10 +193,8 @@ function extractReadmeAreas(markdown) {
 }
 
 function extractKpis(source) {
-  return Object.fromEntries(
-    [...source.matchAll(/<div class="kpi"><div class="v">([^<]+)<\/div><div class="l">([^<]+)<\/div><\/div>/g)].map(
-      ([, value, label]) => [label, value]
-    )
+  return [...source.matchAll(/<div class="kpi"><div class="v">([^<]+)<\/div><div class="l">([^<]+)<\/div><\/div>/g)].map(
+    ([, value, label]) => ({ value, label })
   );
 }
 
@@ -220,13 +218,10 @@ test('README dashboard areas match the source data in index.html', () => {
 });
 
 test('Dashboard KPI cards match the source data', () => {
-  assert.strictEqual(kpis['Áreas AI Driven'], String(totalAreas));
-  assert.strictEqual(kpis['Casos de uso mapeados'], String(totalUseCases));
-  assert.strictEqual(
-    kpis['Áreas com IA ativa'],
-    `${Math.round((activeAreas / totalAreas) * 100)}%`
-  );
-  assert.strictEqual(kpis['Boas práticas-guia'], String(practicesCount));
+  assert.strictEqual(kpis[0]?.value, String(totalAreas));
+  assert.strictEqual(kpis[1]?.value, String(totalUseCases));
+  assert.strictEqual(kpis[2]?.value, `${Math.round((activeAreas / totalAreas) * 100)}%`);
+  assert.strictEqual(kpis[3]?.value, String(practicesCount));
 });
 
 test('README best-practice count matches the page', () => {
