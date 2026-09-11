@@ -14,8 +14,11 @@ function extractObjectLiteral(source, variableName) {
 
   assert.notStrictEqual(declarationIndex, -1, `Could not find "${variableName}" in index.html.`);
 
-  const objectStart = source.indexOf('{', declarationIndex + declarationMatch[0].length - 1);
-  assert.notStrictEqual(objectStart, -1, `Could not find the start of "${variableName}".`);
+  const objectStart = findNextValueStart(
+    source,
+    declarationIndex + declarationMatch[0].length
+  );
+  assert.strictEqual(source[objectStart], '{', `"${variableName}" must be assigned to an object literal.`);
 
   const objectEnd = findMatchingBrace(source, objectStart);
 
@@ -342,6 +345,67 @@ function findMatchingBrace(source, startIndex) {
   return -1;
 }
 
+function findNextValueStart(source, startIndex) {
+  let quote = null;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  for (let index = startIndex; index < source.length; index += 1) {
+    const current = source[index];
+    const next = source[index + 1];
+
+    if (inLineComment) {
+      if (current === '\n') {
+        inLineComment = false;
+      }
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (current === '*' && next === '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (current === '\\') {
+        index += 1;
+        continue;
+      }
+
+      if (current === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (current === '/' && next === '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (current === '/' && next === '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (current === "'" || current === '"') {
+      quote = current;
+      continue;
+    }
+
+    if (!/\s/.test(current)) {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
 function extractSectionText(source, className) {
   const sections = [
     ...source.matchAll(/<section([^>]*)>([\s\S]*?)<\/section>/g),
@@ -373,25 +437,30 @@ function extractReadmeAreas(markdown) {
   );
 }
 
+let dashboardFixture;
 function getDashboardFixture() {
-  const dashboardData = extractObjectLiteral(html, 'data');
-  const totalAreas = Object.keys(dashboardData).length;
-  const totalUseCases = Object.values(dashboardData).reduce(
-    (count, useCases) => count + useCases.length,
-    0
-  );
-  const activeAreas = Object.values(dashboardData).filter((useCases) => useCases.length > 0).length;
-  const practicesCount = countElementsWithClass(html, 'div', 'practice');
+  if (!dashboardFixture) {
+    const dashboardData = extractObjectLiteral(html, 'data');
+    const totalAreas = Object.keys(dashboardData).length;
+    const totalUseCases = Object.values(dashboardData).reduce(
+      (count, useCases) => count + useCases.length,
+      0
+    );
+    const activeAreas = Object.values(dashboardData).filter((useCases) => useCases.length > 0).length;
+    const practicesCount = countElementsWithClass(html, 'div', 'practice');
 
-  return {
-    dashboardData,
-    kpisText: extractSectionText(html, 'kpis'),
-    practicesCount,
-    activeAreasPercentage:
-      totalAreas === 0 ? '0%' : `${Math.round((activeAreas / totalAreas) * 100)}%`,
-    totalAreas,
-    totalUseCases,
-  };
+    dashboardFixture = {
+      dashboardData,
+      kpisText: extractSectionText(html, 'kpis'),
+      practicesCount,
+      activeAreasPercentage:
+        totalAreas === 0 ? '0%' : `${Math.round((activeAreas / totalAreas) * 100)}%`,
+      totalAreas,
+      totalUseCases,
+    };
+  }
+
+  return dashboardFixture;
 }
 
 test('README dashboard areas can be parsed', () => {
