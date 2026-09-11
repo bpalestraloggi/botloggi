@@ -512,6 +512,15 @@ test('extractObjectLiteral accepts flexible spacing around declarations', () => 
   });
 });
 
+test('extractObjectLiteral rejects unsupported JavaScript-only values', () => {
+  const source = `const data = { item: [undefined] };`;
+
+  assert.throws(
+    () => extractObjectLiteral(source, 'data'),
+    /contains JavaScript-only values/
+  );
+});
+
 test('README area parsing preserves empty use-case lists', () => {
   assert.deepStrictEqual(
     extractReadmeAreas('    - **Financeiro** — '),
