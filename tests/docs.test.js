@@ -189,6 +189,10 @@ function quoteBareObjectKeys(source) {
   return normalized;
 }
 
+function escapeRegExp(source) {
+  return source.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function findMatchingBrace(source, startIndex) {
   let depth = 0;
   let quote = null;
@@ -327,10 +331,19 @@ test('Dashboard KPI cards match the source data', () => {
   const {activeAreasPercentage, kpisText, practicesCount, totalAreas, totalUseCases} =
     getDashboardFixture();
 
-  assert.match(kpisText, new RegExp(`\\b${totalAreas}\\s+Áreas AI Driven\\b`));
-  assert.match(kpisText, new RegExp(`\\b${totalUseCases}\\s+Casos de uso mapeados\\b`));
-  assert.match(kpisText, new RegExp(`\\b${activeAreasPercentage.replace('%', '\\%')}\\s+Áreas com IA ativa\\b`));
-  assert.match(kpisText, new RegExp(`\\b${practicesCount}\\s+Boas práticas-guia\\b`));
+  assert.match(kpisText, new RegExp(`\\b${escapeRegExp(String(totalAreas))}\\s+Áreas AI Driven\\b`));
+  assert.match(
+    kpisText,
+    new RegExp(`\\b${escapeRegExp(String(totalUseCases))}\\s+Casos de uso mapeados\\b`)
+  );
+  assert.match(
+    kpisText,
+    new RegExp(`\\b${escapeRegExp(activeAreasPercentage)}\\s+Áreas com IA ativa\\b`)
+  );
+  assert.match(
+    kpisText,
+    new RegExp(`\\b${escapeRegExp(String(practicesCount))}\\s+Boas práticas-guia\\b`)
+  );
 });
 
 test('README best-practice count matches the page', () => {
