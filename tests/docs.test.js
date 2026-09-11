@@ -262,9 +262,14 @@ function findMatchingBrace(source, startIndex) {
 }
 
 function extractSectionText(source, className) {
-  const match = source.match(
-    new RegExp(`<section[^>]*class=(["'])[^"'<>]*${className}[^"'<>]*\\1[^>]*>([\\s\\S]*?)<\\/section>`)
-  );
+  const sections = [
+    ...source.matchAll(/<section([^>]*)>([\s\S]*?)<\/section>/g),
+  ];
+  const match = sections.find(([, attributes]) => {
+    const classMatch = attributes.match(/\bclass=(["'])([^"']*)\1/);
+
+    return classMatch?.[2].split(/\s+/).includes(className);
+  });
 
   assert.ok(match, `Could not find the "${className}" section in index.html.`);
   return match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
