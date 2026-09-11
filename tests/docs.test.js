@@ -35,12 +35,98 @@ function extractObjectLiteral(source, variableName) {
   assert.notStrictEqual(objectEnd, -1, `Could not find the end of "${variableName}".`);
 
   const objectLiteral = source.slice(objectStart, objectEnd + 1);
-  const jsonLiteral = objectLiteral.replace(
+  const jsonLiteral = normalizeJavaScriptObjectLiteral(objectLiteral).replace(
     /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)/g,
     '$1"$2"$3'
   );
 
   return JSON.parse(jsonLiteral);
+}
+
+function normalizeJavaScriptObjectLiteral(source) {
+  let normalized = '';
+  let index = 0;
+  let quote = null;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  while (index < source.length) {
+    const current = source[index];
+    const next = source[index + 1];
+
+    if (inLineComment) {
+      if (current === '\n') {
+        inLineComment = false;
+        normalized += current;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (current === '*' && next === '/') {
+        inBlockComment = false;
+        index += 2;
+        continue;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (quote) {
+      if (current === '\\') {
+        const escaped = next ?? '';
+
+        if (escaped === quote) {
+          normalized += escaped === '"' ? '\\"' : escaped;
+        } else if (escaped === '"') {
+          normalized += '\\"';
+        } else if ('\\/bfnrtu'.includes(escaped)) {
+          normalized += `\\${escaped}`;
+        } else {
+          normalized += escaped;
+        }
+
+        index += 2;
+        continue;
+      }
+
+      if (current === quote) {
+        normalized += '"';
+        quote = null;
+        index += 1;
+        continue;
+      }
+
+      normalized += quote === "'" && current === '"' ? '\\"' : current;
+      index += 1;
+      continue;
+    }
+
+    if (current === '/' && next === '/') {
+      inLineComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (current === '/' && next === '*') {
+      inBlockComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (current === "'" || current === '"') {
+      quote = current;
+      normalized += '"';
+      index += 1;
+      continue;
+    }
+
+    normalized += current;
+    index += 1;
+  }
+
+  return normalized.replace(/,(\s*[}\]])/g, '$1');
 }
 
 function extractReadmeAreas(markdown) {
