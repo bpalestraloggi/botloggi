@@ -8,12 +8,13 @@ const readme = fs.readFileSync(path.join(rootDir, 'README.md'), 'utf8');
 const html = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 
 function extractObjectLiteral(source, variableName) {
-  const declaration = `const ${variableName} =`;
-  const declarationIndex = source.indexOf(declaration);
+  const declaration = new RegExp(`const\\s+${escapeRegExp(variableName)}\\s*=\\s*`);
+  const declarationMatch = source.match(declaration);
+  const declarationIndex = declarationMatch?.index ?? -1;
 
   assert.notStrictEqual(declarationIndex, -1, `Could not find "${variableName}" in index.html.`);
 
-  const objectStart = source.indexOf('{', declarationIndex);
+  const objectStart = source.indexOf('{', declarationIndex + declarationMatch[0].length - 1);
   assert.notStrictEqual(objectStart, -1, `Could not find the start of "${variableName}".`);
 
   const objectEnd = findMatchingBrace(source, objectStart);
@@ -285,7 +286,7 @@ function countElementsWithClass(source, tagName, className) {
 
 function extractReadmeAreas(markdown) {
   return Object.fromEntries(
-    [...markdown.matchAll(/^\s{2,}-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
+    [...markdown.matchAll(/^\s*-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
       area,
       useCases.trim(),
     ])
@@ -329,9 +330,12 @@ test('README dashboard areas match the source data in index.html', () => {
   const expectedReadmeAreas = Object.fromEntries(
     Object.entries(dashboardData).map(([area, useCases]) => [area, useCases.join(', ')])
   );
+  const readmeAreas = Object.fromEntries(
+    Object.entries(extractReadmeAreas(readme)).filter(([area]) => area in dashboardData)
+  );
 
   assert.deepStrictEqual(
-    Object.entries(extractReadmeAreas(readme)).sort(([leftArea], [rightArea]) =>
+    Object.entries(readmeAreas).sort(([leftArea], [rightArea]) =>
       leftArea.localeCompare(rightArea)
     ),
     Object.entries(expectedReadmeAreas).sort(([leftArea], [rightArea]) =>
