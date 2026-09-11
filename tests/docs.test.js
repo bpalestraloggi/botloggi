@@ -16,21 +16,7 @@ function extractObjectLiteral(source, variableName) {
   const objectStart = source.indexOf('{', declarationIndex);
   assert.notStrictEqual(objectStart, -1, `Could not find the start of "${variableName}".`);
 
-  let depth = 0;
-  let objectEnd = -1;
-
-  for (let index = objectStart; index < source.length; index += 1) {
-    if (source[index] === '{') {
-      depth += 1;
-    } else if (source[index] === '}') {
-      depth -= 1;
-
-      if (depth === 0) {
-        objectEnd = index;
-        break;
-      }
-    }
-  }
+  const objectEnd = findMatchingBrace(source, objectStart);
 
   assert.notStrictEqual(objectEnd, -1, `Could not find the end of "${variableName}".`);
 
@@ -84,7 +70,7 @@ function normalizeJavaScriptObjectLiteral(source) {
         } else if ('\\/bfnrtu'.includes(escaped)) {
           normalized += `\\${escaped}`;
         } else {
-          normalized += escaped;
+          normalized += `\\${escaped}`;
         }
 
         index += 2;
@@ -127,6 +113,74 @@ function normalizeJavaScriptObjectLiteral(source) {
   }
 
   return normalized.replace(/,(\s*[}\]])/g, '$1');
+}
+
+function findMatchingBrace(source, startIndex) {
+  let depth = 0;
+  let quote = null;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  for (let index = startIndex; index < source.length; index += 1) {
+    const current = source[index];
+    const next = source[index + 1];
+
+    if (inLineComment) {
+      if (current === '\n') {
+        inLineComment = false;
+      }
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (current === '*' && next === '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (current === '\\') {
+        index += 1;
+        continue;
+      }
+
+      if (current === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (current === '/' && next === '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (current === '/' && next === '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (current === "'" || current === '"') {
+      quote = current;
+      continue;
+    }
+
+    if (current === '{') {
+      depth += 1;
+    } else if (current === '}') {
+      depth -= 1;
+
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+
+  return -1;
 }
 
 function extractReadmeAreas(markdown) {
