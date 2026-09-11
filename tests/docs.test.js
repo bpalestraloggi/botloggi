@@ -185,7 +185,7 @@ function findMatchingBrace(source, startIndex) {
 
 function extractReadmeAreas(markdown) {
   return Object.fromEntries(
-    [...markdown.matchAll(/^  - \*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
+    [...markdown.matchAll(/^\s{2,}-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
       area,
       useCases.trim() === ''
         ? []
@@ -195,9 +195,11 @@ function extractReadmeAreas(markdown) {
 }
 
 function extractKpis(source) {
-  return [...source.matchAll(/<div class="kpi"><div class="v">([^<]+)<\/div><div class="l">([^<]+)<\/div><\/div>/g)].map(
-    ([, value, label]) => ({ value, label })
-  );
+  return [
+    ...source.matchAll(
+      /<div class="kpi"[^>]*>\s*<div class="v"[^>]*>([^<]+)<\/div>\s*<div class="l"[^>]*>([^<]+)<\/div>\s*<\/div>/g
+    ),
+  ].map(([, value, label]) => ({ value, label }));
 }
 
 const dashboardData = extractObjectLiteral(html, 'data');
@@ -219,7 +221,7 @@ test('README dashboard areas can be parsed', () => {
 
 test('README area parsing preserves empty use-case lists', () => {
   assert.deepStrictEqual(
-    extractReadmeAreas('  - **Financeiro** — '),
+    extractReadmeAreas('    - **Financeiro** — '),
     { Financeiro: [] }
   );
 });
