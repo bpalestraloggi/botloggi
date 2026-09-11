@@ -242,11 +242,14 @@ test('README dashboard areas match the source data in index.html', () => {
 test('Dashboard KPI cards match the source data', () => {
   const {activeAreasPercentage, kpis, practicesCount, totalAreas, totalUseCases} =
     getDashboardFixture();
+  const expectedKpis = [
+    {label: 'Áreas AI Driven', value: String(totalAreas)},
+    {label: 'Casos de uso mapeados', value: String(totalUseCases)},
+    {label: 'Áreas com IA ativa', value: activeAreasPercentage},
+    {label: 'Boas práticas-guia', value: String(practicesCount)},
+  ];
 
-  assert.strictEqual(kpis[0]?.value, String(totalAreas));
-  assert.strictEqual(kpis[1]?.value, String(totalUseCases));
-  assert.strictEqual(kpis[2]?.value, activeAreasPercentage);
-  assert.strictEqual(kpis[3]?.value, String(practicesCount));
+  assert.deepStrictEqual(kpis, expectedKpis);
 });
 
 test('README best-practice count matches the page', () => {
