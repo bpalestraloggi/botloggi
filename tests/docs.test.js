@@ -444,7 +444,7 @@ function countElementsWithClass(source, tagName, className) {
 
 function extractReadmeAreas(markdown) {
   return Object.fromEntries(
-    [...markdown.matchAll(/^\s*-\s+\*\*(.+?)\*\* — (.*)$/gm)].map(([, area, useCases]) => [
+    [...markdown.matchAll(/^\s*-\s+\*\*(.+?)\*\*\s*—\s*(.*)$/gm)].map(([, area, useCases]) => [
       area,
       useCases.trim(),
     ])
@@ -536,6 +536,9 @@ test('README area parsing preserves empty use-case lists', () => {
 
 test('README area parsing requires the documented em dash separator', () => {
   assert.deepStrictEqual(extractReadmeAreas('- **Financeiro** — Caixa'), {
+    Financeiro: 'Caixa',
+  });
+  assert.deepStrictEqual(extractReadmeAreas('- **Financeiro**  —   Caixa'), {
     Financeiro: 'Caixa',
   });
   assert.deepStrictEqual(extractReadmeAreas('- **Financeiro** - Caixa'), {});
