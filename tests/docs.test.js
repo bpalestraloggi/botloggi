@@ -208,6 +208,8 @@ const totalUseCases = Object.values(dashboardData).reduce(
 );
 const activeAreas = Object.values(dashboardData).filter((useCases) => useCases.length > 0).length;
 const practicesCount = [...html.matchAll(/<div class="practice">/g)].length;
+const activeAreasPercentage =
+  totalAreas === 0 ? '0%' : `${Math.round((activeAreas / totalAreas) * 100)}%`;
 
 test('README dashboard areas can be parsed', () => {
   assert.ok(Object.keys(readmeAreas).length > 0);
@@ -220,7 +222,7 @@ test('README dashboard areas match the source data in index.html', () => {
 test('Dashboard KPI cards match the source data', () => {
   assert.strictEqual(kpis[0]?.value, String(totalAreas));
   assert.strictEqual(kpis[1]?.value, String(totalUseCases));
-  assert.strictEqual(kpis[2]?.value, `${Math.round((activeAreas / totalAreas) * 100)}%`);
+  assert.strictEqual(kpis[2]?.value, activeAreasPercentage);
   assert.strictEqual(kpis[3]?.value, String(practicesCount));
 });
 
