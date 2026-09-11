@@ -513,12 +513,18 @@ test('extractObjectLiteral accepts flexible spacing around declarations', () => 
 });
 
 test('extractObjectLiteral rejects unsupported JavaScript-only values', () => {
-  const source = `const data = { item: [undefined] };`;
-
-  assert.throws(
-    () => extractObjectLiteral(source, 'data'),
-    /contains JavaScript-only values/
-  );
+  for (const source of [
+    `const data = { item: [undefined] };`,
+    `const data = { item: [NaN] };`,
+    `const data = { item: [Infinity] };`,
+    `const data = { item: [,"value"] };`,
+    `const data = { item: ["value",, "other"] };`,
+  ]) {
+    assert.throws(
+      () => extractObjectLiteral(source, 'data'),
+      /contains JavaScript-only values/
+    );
+  }
 });
 
 test('README area parsing preserves empty use-case lists', () => {
