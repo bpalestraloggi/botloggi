@@ -202,21 +202,30 @@ function extractKpis(source) {
   ].map(([, value, label]) => ({ value, label }));
 }
 
-const dashboardData = extractObjectLiteral(html, 'data');
-const readmeAreas = extractReadmeAreas(readme);
-const kpis = extractKpis(html);
-const totalAreas = Object.keys(dashboardData).length;
-const totalUseCases = Object.values(dashboardData).reduce(
-  (count, useCases) => count + useCases.length,
-  0
-);
-const activeAreas = Object.values(dashboardData).filter((useCases) => useCases.length > 0).length;
-const practicesCount = [...html.matchAll(/<div class="practice">/g)].length;
-const activeAreasPercentage =
-  totalAreas === 0 ? '0%' : `${Math.round((activeAreas / totalAreas) * 100)}%`;
+function getDashboardFixture() {
+  const dashboardData = extractObjectLiteral(html, 'data');
+  const kpis = extractKpis(html);
+  const totalAreas = Object.keys(dashboardData).length;
+  const totalUseCases = Object.values(dashboardData).reduce(
+    (count, useCases) => count + useCases.length,
+    0
+  );
+  const activeAreas = Object.values(dashboardData).filter((useCases) => useCases.length > 0).length;
+  const practicesCount = [...html.matchAll(/<div class="practice">/g)].length;
+
+  return {
+    dashboardData,
+    kpis,
+    practicesCount,
+    activeAreasPercentage:
+      totalAreas === 0 ? '0%' : `${Math.round((activeAreas / totalAreas) * 100)}%`,
+    totalAreas,
+    totalUseCases,
+  };
+}
 
 test('README dashboard areas can be parsed', () => {
-  assert.ok(Object.keys(readmeAreas).length > 0);
+  assert.ok(Object.keys(extractReadmeAreas(readme)).length > 0);
 });
 
 test('README area parsing preserves empty use-case lists', () => {
@@ -227,10 +236,13 @@ test('README area parsing preserves empty use-case lists', () => {
 });
 
 test('README dashboard areas match the source data in index.html', () => {
-  assert.deepStrictEqual(readmeAreas, dashboardData);
+  assert.deepStrictEqual(extractReadmeAreas(readme), getDashboardFixture().dashboardData);
 });
 
 test('Dashboard KPI cards match the source data', () => {
+  const {activeAreasPercentage, kpis, practicesCount, totalAreas, totalUseCases} =
+    getDashboardFixture();
+
   assert.strictEqual(kpis[0]?.value, String(totalAreas));
   assert.strictEqual(kpis[1]?.value, String(totalUseCases));
   assert.strictEqual(kpis[2]?.value, activeAreasPercentage);
@@ -238,6 +250,7 @@ test('Dashboard KPI cards match the source data', () => {
 });
 
 test('README best-practice count matches the page', () => {
+  const {practicesCount} = getDashboardFixture();
   const match = readme.match(
     /^- \*\*Como usar a IA da maneira correta\*\* — (\d+) boas práticas .*$/m
   );
