@@ -517,6 +517,7 @@ test('extractObjectLiteral rejects unsupported JavaScript-only values', () => {
     `const data = { item: [undefined] };`,
     `const data = { item: [NaN] };`,
     `const data = { item: [Infinity] };`,
+    `const data = { item: [ , ] };`,
     `const data = { item: [,"value"] };`,
     `const data = { item: ["value",, "other"] };`,
   ]) {
