@@ -189,11 +189,11 @@ function findMatchingBrace(source, startIndex) {
 
 function extractSectionText(source, className) {
   const match = source.match(
-    new RegExp(`<section[^>]*class="[^"]*${className}[^"]*"[^>]*>([\\s\\S]*?)<\\/section>`)
+    new RegExp(`<section[^>]*class=(["'])[^"'<>]*${className}[^"'<>]*\\1[^>]*>([\\s\\S]*?)<\\/section>`)
   );
 
   assert.ok(match, `Could not find the "${className}" section in index.html.`);
-  return match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return match[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function extractReadmeAreas(markdown) {
@@ -243,7 +243,14 @@ test('README dashboard areas match the source data in index.html', () => {
     Object.entries(dashboardData).map(([area, useCases]) => [area, useCases.join(', ')])
   );
 
-  assert.deepStrictEqual(extractReadmeAreas(readme), expectedReadmeAreas);
+  assert.deepStrictEqual(
+    Object.entries(extractReadmeAreas(readme)).sort(([leftArea], [rightArea]) =>
+      leftArea.localeCompare(rightArea)
+    ),
+    Object.entries(expectedReadmeAreas).sort(([leftArea], [rightArea]) =>
+      leftArea.localeCompare(rightArea)
+    )
+  );
 });
 
 test('Dashboard KPI cards match the source data', () => {
