@@ -4,17 +4,23 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 
 ## Repository Overview
 
-**botloggi** (`Repositório Prado`) is a Python CLI application scaffolded with [uv](https://docs.astral.sh/uv/), pytest, and ruff. The CLI itself is currently a placeholder (`botloggi` prints a stub message) — real functionality is still to be built.
+**botloggi** (`Repositório Prado`) hosts two independent projects:
+
+- A static dashboard (`index.html`) — a single-file HTML page (Highcharts sunburst, no build step) visualizing "Como usamos IA no Viver de IA".
+- A Python CLI application (`src/botloggi/`) scaffolded with [uv](https://docs.astral.sh/uv/), pytest, and ruff. The CLI itself is currently a placeholder (`botloggi` prints a stub message) — real functionality is still to be built.
+
+These do not share code or build tooling — treat them as separate concerns when making changes.
 
 ## Directory Layout
 
 | Path | Purpose |
 | --- | --- |
-| `src/botloggi/` | Package source (`cli.py` holds the entry point `main()`) |
-| `tests/` | pytest test suite |
-| `pyproject.toml` | Project metadata, dependencies, ruff/pytest config |
+| `index.html` | Static AI-usage dashboard (self-contained, no build) |
+| `src/botloggi/` | CLI package source (`cli.py` holds the entry point `main()`) |
+| `tests/` | pytest test suite (CLI only) |
+| `pyproject.toml` | CLI project metadata, dependencies, ruff/pytest config |
 | `uv.lock` | Locked dependency versions (commit this file) |
-| `README.md` | User-facing usage instructions |
+| `README.md` | User-facing usage instructions for both projects |
 
 ## Install / Build / Test / Lint
 
