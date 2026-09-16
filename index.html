@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Como usamos IA no Viver de IA — Dashboard AI Driven</title>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/sunburst.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<style>
+  :root {
+    --bg:        #0a1626;
+    --panel:     #0f1f38;
+    --panel-2:   #13294b;
+    --ink:       #e8eef7;
+    --ink-soft:  #9fb3cc;
+    --line:      #1d3559;
+    --rh:        #0c2034;
+    --mkt:       #5b7799;
+    --vendas:    #b9c9dc;
+    --atend:     #7a93b0;
+    --fin:       #aec4dd;
+    --accent:    #4f9dff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 70% -10%, #14294a 0%, var(--bg) 55%);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  header.top { margin-bottom: 28px; }
+  header.top .eyebrow {
+    letter-spacing: .22em; text-transform: uppercase;
+    font-size: 12px; color: var(--accent); font-weight: 700;
+  }
+  header.top h1 { margin: 6px 0 4px; font-size: 34px; font-weight: 800; }
+  header.top h1 b { color: var(--accent); }
+  header.top p { margin: 0; color: var(--ink-soft); max-width: 720px; }
+
+  /* KPI row */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 26px 0 30px; }
+  .kpi {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px;
+  }
+  .kpi .v { font-size: 32px; font-weight: 800; }
+  .kpi .l { color: var(--ink-soft); font-size: 13px; margin-top: 2px; }
+
+  /* main grid */
+  .grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; align-items: stretch; }
+  .card {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 18px; }
+  .card .sub { color: var(--ink-soft); font-size: 13px; margin-bottom: 8px; }
+  #chart { width: 100%; height: 560px; }
+
+  /* legend / areas */
+  .areas { display: flex; flex-direction: column; gap: 12px; }
+  .area {
+    border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+    background: rgba(255,255,255,.02);
+  }
+  .area .head { display: flex; align-items: center; gap: 10px; }
+  .dot { width: 14px; height: 14px; border-radius: 4px; flex: 0 0 auto; }
+  .area .name { font-weight: 700; font-size: 15px; }
+  .area .count { margin-left: auto; color: var(--ink-soft); font-size: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tag {
+    font-size: 12px; padding: 4px 10px; border-radius: 999px;
+    background: rgba(79,157,255,.12); border: 1px solid rgba(79,157,255,.25);
+    color: #cfe3ff;
+  }
+
+  /* best practices */
+  .practices { margin-top: 18px; }
+  .practices .pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .practice { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
+    background: rgba(255,255,255,.02); }
+  .practice .n { color: var(--accent); font-weight: 800; font-size: 13px; letter-spacing: .1em; }
+  .practice h3 { margin: 6px 0 6px; font-size: 15px; }
+  .practice p { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+
+  footer { margin-top: 36px; color: var(--ink-soft); font-size: 12px; text-align: center; }
+
+  @media (max-width: 980px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: 1fr; }
+    .practices .pgrid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">AI Driven · Viver de IA</div>
+    <h1>Como usamos <b>IA</b> no Viver de IA</h1>
+    <p>Mapa de aplicação de Inteligência Artificial por área da empresa — e o guia de
+       como usar a IA da maneira correta em cada frente de trabalho.</p>
+  </header>
+
+  <section class="kpis">
+    <div class="kpi"><div class="v">5</div><div class="l">Áreas AI Driven</div></div>
+    <div class="kpi"><div class="v">26</div><div class="l">Casos de uso mapeados</div></div>
+    <div class="kpi"><div class="v">100%</div><div class="l">Áreas com IA ativa</div></div>
+    <div class="kpi"><div class="v">6</div><div class="l">Boas práticas-guia</div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Roda de aplicação da IA</h2>
+      <div class="sub">Clique em uma área para explorar os casos de uso.</div>
+      <div id="chart"></div>
+    </div>
+
+    <div class="card">
+      <h2>Áreas &amp; casos de uso</h2>
+      <div class="sub">Onde a IA atua hoje no dia a dia.</div>
+      <div class="areas" id="areas"></div>
+    </div>
+  </section>
+
+  <section class="card practices">
+    <h2>Como usar a IA da maneira correta</h2>
+    <div class="sub">Princípios que guiam o uso responsável e produtivo da IA em todas as áreas.</div>
+    <div class="pgrid">
+      <div class="practice"><div class="n">01</div><h3>Contexto antes do prompt</h3>
+        <p>Forneça dados, objetivo e público. Quanto mais contexto, mais precisa e útil é a resposta da IA.</p></div>
+      <div class="practice"><div class="n">02</div><h3>Humano no comando</h3>
+        <p>A IA acelera, mas a decisão final é humana. Sempre revise antes de publicar, enviar ou executar.</p></div>
+      <div class="practice"><div class="n">03</div><h3>Verifique os fatos</h3>
+        <p>Confirme números, nomes e fontes. Trate a IA como um estagiário brilhante — confie, mas valide.</p></div>
+      <div class="practice"><div class="n">04</div><h3>Proteja os dados</h3>
+        <p>Nunca exponha dados sensíveis de clientes ou da empresa em ferramentas não aprovadas.</p></div>
+      <div class="practice"><div class="n">05</div><h3>Itere em ciclos</h3>
+        <p>Refine o resultado em rodadas curtas. Peça ajustes específicos em vez de recomeçar do zero.</p></div>
+      <div class="practice"><div class="n">06</div><h3>Padronize o que funciona</h3>
+        <p>Transforme bons prompts em templates reutilizáveis para escalar o ganho em toda a equipe.</p></div>
+    </div>
+  </section>
+
+  <footer>Dashboard AI Driven · Viver de IA — gerado a partir do mapa "Como usamos IA". Atualizado em 30/05/2026.</footer>
+</div>
+
+<script>
+const palette = {
+  RH:          "#0c2034",
+  Marketing:   "#5b7799",
+  Vendas:      "#b9c9dc",
+  Atendimento: "#7a93b0",
+  Financeiro:  "#aec4dd"
+};
+
+const data = {
+  RH:          ["Triagem", "Novos contratos", "Onboarding", "PDIs", "1:1 com o time"],
+  Marketing:   ["Gerar vídeos", "Copywriting", "Campanhas", "Sites", "Gerar imagens"],
+  Vendas:      ["Reuniões", "Negociação", "Forecast", "Follow up", "Propostas", "Prospecção"],
+  Atendimento: ["Automação", "Roteamento", "Satisfação", "Conhecimento", "Ligações", "Personalização"],
+  Financeiro:  ["Contas a pagar", "Fluxo de caixa", "Contas a receber", "Cálculos"]
+};
+
+// Build sunburst series
+const points = [{ id: "0.0", parent: "", name: "AI Driven", color: "#ffffff" }];
+Object.keys(data).forEach((area, i) => {
+  const aid = "area-" + i;
+  points.push({ id: aid, parent: "0.0", name: area, color: palette[area] });
+  data[area].forEach((use, j) => {
+    points.push({ id: aid + "-" + j, parent: aid, name: use, value: 1, color: palette[area] });
+  });
+});
+
+Highcharts.setOptions({ lang: { contextButtonTitle: "Exportar" } });
+
+Highcharts.chart("chart", {
+  chart: { backgroundColor: "transparent", height: 560 },
+  title: { text: "" },
+  credits: { enabled: false },
+  series: [{
+    type: "sunburst",
+    data: points,
+    name: "Viver de IA",
+    allowDrillToNode: true,
+    cursor: "pointer",
+    borderColor: "#0a1626",
+    borderWidth: 2,
+    dataLabels: {
+      style: { fontSize: "12px", textOutline: "none", fontWeight: "600", color: "#0a1626" },
+      filter: { property: "innerArcLength", operator: ">", value: 16 }
+    },
+    levels: [
+      { level: 1, levelIsConstant: false,
+        dataLabels: { rotationMode: "circular", style: { color: "#fff", fontWeight: "800", fontSize: "14px" } } },
+      { level: 2, colorByPoint: false,
+        dataLabels: { rotationMode: "parallel", style: { color: "#fff", fontWeight: "700", fontSize: "13px" } } },
+      { level: 3, colorByPoint: false,
+        dataLabels: { rotationMode: "parallel" } }
+    ]
+  }],
+  tooltip: { headerFormat: "", pointFormat: "<b>{point.name}</b>" }
+});
+
+// Build areas list
+const areasEl = document.getElementById("areas");
+Object.keys(data).forEach(area => {
+  const wrap = document.createElement("div");
+  wrap.className = "area";
+  const tags = data[area].map(u => `<span class="tag">${u}</span>`).join("");
+  wrap.innerHTML = `
+    <div class="head">
+      <span class="dot" style="background:${palette[area]}"></span>
+      <span class="name">${area}</span>
+      <span class="count">${data[area].length} usos</span>
+    </div>
+    <div class="tags">${tags}</div>`;
+  areasEl.appendChild(wrap);
+});
+</script>
+</body>
+</html>
