@@ -29,3 +29,9 @@ HTML que usa [Highcharts](https://www.highcharts.com/) (módulo *sunburst*) via 
 
 Os dados ficam no objeto `data` dentro do `<script>` em `index.html`. Edite para incluir
 novas áreas ou casos de uso — a roda e a lista são geradas automaticamente.
+
+## Portal OAB SP
+
+Arquivo [`portal-oab-sp.html`](./portal-oab-sp.html) — versão exportada do artifact
+**Portal OAB SP (Copy)**. É um HTML autocontido (todos os assets embutidos), sem build
+e sem dependência de rede: basta baixar e abrir no navegador (funciona via `file://`).
