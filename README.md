@@ -1,6 +1,9 @@
-# botloggi — Dashboard "Como usamos IA no Viver de IA"
+# botloggi
 
-Repositório Prado.
+Repositório Prado. Este repositório reúne dois projetos independentes:
+
+- **Dashboard "Como usamos IA no Viver de IA"** — página HTML estática (`index.html`).
+- **CLI botloggi** — ferramenta de linha de comando em Python (`src/botloggi/`).
 
 ## Dashboard AI Driven
 
@@ -29,3 +32,22 @@ HTML que usa [Highcharts](https://www.highcharts.com/) (módulo *sunburst*) via 
 
 Os dados ficam no objeto `data` dentro do `<script>` em `index.html`. Edite para incluir
 novas áreas ou casos de uso — a roda e a lista são geradas automaticamente.
+
+## CLI botloggi
+
+Ferramenta de linha de comando em Python, gerenciada com [uv](https://docs.astral.sh/uv/).
+
+### Usage
+
+```sh
+uv sync
+uv run botloggi
+```
+
+### Development
+
+```sh
+uv run pytest        # run tests
+uv run ruff check .   # lint
+uv run ruff format .  # format
+```
