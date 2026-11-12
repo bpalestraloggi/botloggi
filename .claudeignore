@@ -1,0 +1,9 @@
+# Arquivos irrelevantes para desenvolvimento
+proposta-turbi.html
+
+# Lockfiles (machine-generated)
+uv.lock
+
+# Artefatos de build
+dist/
+*.egg-info/
