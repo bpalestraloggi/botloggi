@@ -29,10 +29,19 @@ NextAuth 4 com sessão JWT em cookie assinado (sem banco):
 
 - **Provedores:** GitHub e/ou Google, ativados quando `AUTH_GITHUB_*` / `AUTH_GOOGLE_*` estão definidos.
   Callback OAuth: `<NEXTAUTH_URL>/api/auth/callback/github` (ou `google`).
+- **Quem entra:** só e-mails listados em `AUTH_ALLOWED_EMAILS` (separados por vírgula), e apenas se
+  verificados pelo provedor. No GitHub, a checagem usa `/user/emails` (o e-mail do perfil pode ser
+  privado ou não verificado). Lista vazia bloqueia todos os logins OAuth. Regras em `lib/allowlist.ts`.
 - **Página:** `middleware.ts` redireciona para `/api/auth/signin` quem não está logado.
 - **Runtime:** `/api/copilotkit/*` responde 401 sem sessão; `identifyUser` usa o ID do provedor
   (`github:12345`), então cada conta só vê e continua as próprias threads.
 - **Dev:** `AUTH_DEV_LOGIN=true` adiciona um login sem senha (qualquer nome). Usado no e2e; nunca em produção.
+
+## Testes unitários
+
+```sh
+npm test   # regras da lista de e-mails (node --test)
+```
 
 ## Teste ponta a ponta (sem chave real)
 

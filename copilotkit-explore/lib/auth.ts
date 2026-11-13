@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { isAllowed, parseAllowedEmails, verifiedEmailsFor } from "./allowlist";
 
 // Login de desenvolvimento: aceita qualquer nome, SEM senha.
 // Só existe com AUTH_DEV_LOGIN=true. Nunca habilite em produção.
@@ -52,10 +53,27 @@ if (providers.length === 0) {
   );
 }
 
+const allowedEmails = parseAllowedEmails(process.env.AUTH_ALLOWED_EMAILS);
+if (allowedEmails.size === 0) {
+  console.warn("[auth] AUTH_ALLOWED_EMAILS vazio: nenhum login via GitHub/Google será aceito.");
+}
+
 export const authOptions: NextAuthOptions = {
   providers,
   session: { strategy: "jwt" },
   callbacks: {
+    // Só entra quem tem um e-mail verificado na lista AUTH_ALLOWED_EMAILS.
+    // O provedor "dev" fica de fora: só existe com AUTH_DEV_LOGIN=true.
+    signIn: async ({ account, profile }) => {
+      if (!account) return false;
+      if (account.provider === "dev") return devLogin;
+      const emails = await verifiedEmailsFor(
+        account.provider,
+        profile as Record<string, unknown> | undefined,
+        account.access_token,
+      );
+      return isAllowed(emails, allowedEmails);
+    },
     // No login, grava um ID estável e único por provedor: "github:12345".
     jwt: async ({ token, account }) => {
       if (account) token.uid = `${account.provider}:${account.providerAccountId}`;
