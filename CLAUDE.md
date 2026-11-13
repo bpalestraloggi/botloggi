@@ -9,6 +9,8 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 - A static dashboard (`index.html`) — a single-file HTML page (Highcharts sunburst, no build step) visualizing "Como usamos IA no Viver de IA".
 - A Python CLI application (`src/botloggi/`) scaffolded with [uv](https://docs.astral.sh/uv/), pytest, and ruff. Its first subcommand is `botloggi report <file.csv>` (`src/botloggi/report.py`), which summarizes a CSV using only the standard library.
 
+- A CopilotKit prototype (`copilotkit-explore/`) — Next.js 15 + CopilotKit v2 + Anthropic; a sidebar copilot over the same AI-usage map. Uses `npm`; see its README.
+
 These do not share code or build tooling — treat them as separate concerns when making changes.
 
 ## Directory Layout
@@ -20,6 +22,7 @@ These do not share code or build tooling — treat them as separate concerns whe
 | `tests/` | pytest test suite (CLI only) |
 | `pyproject.toml` | CLI project metadata, dependencies, ruff/pytest config |
 | `uv.lock` | Locked dependency versions (commit this file) |
+| `copilotkit-explore/` | CopilotKit + Next.js prototype (`npm run dev`, `npm run build`; needs `ANTHROPIC_API_KEY` in `.env.local`) |
 | `README.md` | User-facing usage instructions for both projects |
 
 ## Install / Build / Test / Lint
@@ -39,7 +42,7 @@ uv run ruff format .    # format
 
 ## Conventions for AI Assistants
 
-- Use `uv` for all dependency and environment management — don't reach for plain `pip`/`venv` or another package manager.
+- Use `uv` for all Python dependency and environment management — don't reach for plain `pip`/`venv` or another package manager.
 - Keep the CLI entry point in `src/botloggi/cli.py`; add new subcommands/logic as modules under `src/botloggi/` and wire them in from there.
 - Add a test under `tests/` for new behavior; keep tests minimal and focused.
 - Run `uv run ruff check .` and `uv run pytest` before considering a change complete.

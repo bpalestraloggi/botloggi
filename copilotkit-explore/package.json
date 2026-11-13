@@ -1,0 +1,26 @@
+{
+  "name": "copilotkit-explore",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "e2e": "bash e2e/run.sh"
+  },
+  "dependencies": {
+    "@copilotkit/react-core": "1.87.1",
+    "@copilotkit/react-ui": "1.87.1",
+    "@copilotkit/runtime": "1.87.1",
+    "next": "^15.5.29",
+    "react": "^19",
+    "react-dom": "^19",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "@types/react": "*",
+    "typescript": "^6.0.3"
+  }
+}
