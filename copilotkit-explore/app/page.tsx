@@ -8,7 +8,7 @@ import {
   useFrontendTool,
   useHumanInTheLoop,
 } from "@copilotkit/react-core/v2";
-import { useDemoUser } from "./providers";
+import { signOut, useSession } from "next-auth/react";
 
 type UseMap = Record<string, string[]>;
 
@@ -24,7 +24,7 @@ const INITIAL: UseMap = {
 export default function Page() {
   const [map, setMap] = useState<UseMap>(INITIAL);
   const [added, setAdded] = useState<Set<string>>(new Set());
-  const { user, setUser, users } = useDemoUser();
+  const { data: session } = useSession();
 
   // 1) Contexto: o agente "enxerga" o estado atual da tela.
   useAgentContext({
@@ -97,12 +97,10 @@ export default function Page() {
     <>
       <main>
         <div className="userbar">
-          Usuário (demo):{" "}
-          <select value={user} onChange={(e) => setUser(e.target.value)}>
-            {users.map((u) => (
-              <option key={u}>{u}</option>
-            ))}
-          </select>
+          Conectado como <b>{session?.user?.name ?? session?.user?.email}</b>{" "}
+          <button className="link" onClick={() => signOut()}>
+            Sair
+          </button>
         </div>
         <h1>Como usamos IA</h1>
         <p className="sub">
