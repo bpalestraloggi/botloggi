@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "e2e": "bash e2e/run.sh"
   },
   "dependencies": {
     "@copilotkit/react-core": "1.87.1",

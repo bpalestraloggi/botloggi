@@ -6,7 +6,9 @@ import {
   CopilotSidebar,
   useAgentContext,
   useFrontendTool,
+  useHumanInTheLoop,
 } from "@copilotkit/react-core/v2";
+import { useDemoUser } from "./providers";
 
 type UseMap = Record<string, string[]>;
 
@@ -22,6 +24,7 @@ const INITIAL: UseMap = {
 export default function Page() {
   const [map, setMap] = useState<UseMap>(INITIAL);
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const { user, setUser, users } = useDemoUser();
 
   // 1) Contexto: o agente "enxerga" o estado atual da tela.
   useAgentContext({
@@ -53,14 +56,38 @@ export default function Page() {
     [],
   );
 
-  useFrontendTool(
+  // 4) Human-in-the-loop: o agente pede, o usuário decide na tela.
+  useHumanInTheLoop(
     {
       name: "removeUseCase",
-      description: "Remove um caso de uso de uma área.",
+      description:
+        "Remove um caso de uso de uma área. Exige confirmação do usuário; " +
+        "se ele recusar, não insista.",
       parameters: z.object({ area: z.string(), useCase: z.string() }),
-      handler: async ({ area, useCase }) => {
-        setMap((m) => ({ ...m, [area]: (m[area] ?? []).filter((u) => u !== useCase) }));
-        return `Removido "${useCase}" de ${area}.`;
+      render: ({ args, respond, result }) => {
+        if (result) return <div className="card">{result}</div>;
+        if (!respond) return <div className="card">⏳ Preparando remoção…</div>;
+        return (
+          <div className="card confirm">
+            Remover <b>{args.useCase}</b> de <b>{args.area}</b>?
+            <div className="actions">
+              <button
+                onClick={() => {
+                  setMap((m) => ({
+                    ...m,
+                    [args.area]: (m[args.area] ?? []).filter((u) => u !== args.useCase),
+                  }));
+                  respond(`Removido "${args.useCase}" de ${args.area}.`);
+                }}
+              >
+                Remover
+              </button>
+              <button className="ghost" onClick={() => respond("Usuário cancelou a remoção.")}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        );
       },
     },
     [],
@@ -69,10 +96,19 @@ export default function Page() {
   return (
     <>
       <main>
+        <div className="userbar">
+          Usuário (demo):{" "}
+          <select value={user} onChange={(e) => setUser(e.target.value)}>
+            {users.map((u) => (
+              <option key={u}>{u}</option>
+            ))}
+          </select>
+        </div>
         <h1>Como usamos IA</h1>
         <p className="sub">
-          Peça ao copiloto: &quot;sugira 3 usos de IA para Financeiro e adicione&quot; ou
-          &quot;qual área tem menos casos de uso?&quot;
+          Experimente: &quot;consulte o catálogo e sugira usos de alto impacto para
+          Financeiro&quot;, &quot;remova Cálculos de Financeiro&quot; ou &quot;qual área tem menos
+          casos de uso?&quot;
         </p>
         <div className="grid">
           {Object.entries(map).map(([area, uses]) => (

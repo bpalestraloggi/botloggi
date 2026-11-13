@@ -24,4 +24,9 @@ h1 { margin: 0 0 4px; font-size: 28px; }
 .area ul { margin: 0; padding-left: 18px; }
 .area li { margin: 4px 0; }
 .area li.new { color: var(--accent); font-weight: 600; }
-.card { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 4px 0; font-size: 13px; }
+.userbar { color: var(--ink-soft); font-size: 13px; margin-bottom: 16px; }
+.userbar select { margin-left: 4px; }
+.confirm .actions { display: flex; gap: 8px; margin-top: 8px; }
+.confirm button { border: 0; border-radius: 6px; padding: 6px 12px; background: #d64545; color: #fff; cursor: pointer; }
+.confirm button.ghost { background: transparent; color: inherit; border: 1px solid currentColor; }
+.card {border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 4px 0; font-size: 13px; }

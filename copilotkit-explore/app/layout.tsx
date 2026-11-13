@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { CopilotKit } from "@copilotkit/react-core/v2";
 import "@copilotkit/react-core/v2/styles.css";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata = {
   title: "Mapa de IA — Copiloto",
@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <body>
-        <CopilotKit runtimeUrl="/api/copilotkit">{children}</CopilotKit>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
