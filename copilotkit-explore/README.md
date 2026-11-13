@@ -6,7 +6,7 @@ Um copiloto lateral que lê e edita o mapa "Como usamos IA" (mesmos dados do `..
 ## Rodar
 
 ```sh
-cp .env.example .env.local   # preencha ANTHROPIC_API_KEY
+cp .env.example .env.local   # preencha ANTHROPIC_API_KEY, NEXTAUTH_* e um provedor de login
 npm install
 npm run dev                  # http://localhost:3000
 ```
@@ -21,10 +21,18 @@ npm run dev                  # http://localhost:3000
 | Human-in-the-loop (`useHumanInTheLoop`) | `removeUseCase` em `app/page.tsx` | "remova Cálculos de Financeiro" |
 | Tool no servidor (`defineTool`) | `searchUseCaseCatalog` + `lib/catalog.ts` | "consulte o catálogo e sugira usos de alto impacto para Financeiro" |
 | MCP (`mcpServers`) | `route.ts`, ativado por `MCP_SERVER_URL` | depende das tools do servidor MCP |
-| Threads por usuário (`identifyUser`) | `route.ts` + seletor em `app/providers.tsx` | troque o usuário no topo da página |
+| Login + threads por usuário (`identifyUser`) | `lib/auth.ts`, `middleware.ts`, `route.ts` | entre com contas diferentes |
 
-> `identifyUser` aqui confia no header `x-demo-user`, só para demonstração.
-> Em produção, derive o usuário de uma sessão validada (NextAuth, Clerk, Auth0, JWT).
+## Login
+
+NextAuth 4 com sessão JWT em cookie assinado (sem banco):
+
+- **Provedores:** GitHub e/ou Google, ativados quando `AUTH_GITHUB_*` / `AUTH_GOOGLE_*` estão definidos.
+  Callback OAuth: `<NEXTAUTH_URL>/api/auth/callback/github` (ou `google`).
+- **Página:** `middleware.ts` redireciona para `/api/auth/signin` quem não está logado.
+- **Runtime:** `/api/copilotkit/*` responde 401 sem sessão; `identifyUser` usa o ID do provedor
+  (`github:12345`), então cada conta só vê e continua as próprias threads.
+- **Dev:** `AUTH_DEV_LOGIN=true` adiciona um login sem senha (qualquer nome). Usado no e2e; nunca em produção.
 
 ## Teste ponta a ponta (sem chave real)
 
@@ -33,4 +41,5 @@ npm run build && npm run e2e
 ```
 
 Sobe uma API Anthropic simulada (`e2e/fake-anthropic.js`) e um servidor MCP local
-(`e2e/mcp-server.mjs`), e o Playwright (`e2e/drive.js`) exercita os sete recursos acima.
+(`e2e/mcp-server.mjs`), e o Playwright (`e2e/drive.js`) exercita os recursos acima, incluindo 401 sem sessão,
+login, logout e isolamento de threads entre contas.

@@ -22,7 +22,7 @@ These do not share code or build tooling — treat them as separate concerns whe
 | `tests/` | pytest test suite (CLI only) |
 | `pyproject.toml` | CLI project metadata, dependencies, ruff/pytest config |
 | `uv.lock` | Locked dependency versions (commit this file) |
-| `copilotkit-explore/` | CopilotKit + Next.js prototype (`npm run dev`, `npm run build`; needs `ANTHROPIC_API_KEY` in `.env.local`) |
+| `copilotkit-explore/` | CopilotKit + Next.js prototype (`npm run dev`, `npm run build`, `npm run e2e`; needs `ANTHROPIC_API_KEY`, `NEXTAUTH_*` and an OAuth provider in `.env.local`) |
 | `README.md` | User-facing usage instructions for both projects |
 
 ## Install / Build / Test / Lint

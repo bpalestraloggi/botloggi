@@ -7,6 +7,7 @@ import {
   type MCPClientConfig,
 } from "@copilotkit/runtime/v2";
 import { searchCatalog } from "@/lib/catalog";
+import { currentUser, type AuthUser } from "@/lib/auth";
 
 // --- Tools no servidor -------------------------------------------------------
 // Rodam no backend: acesso a dados, segredos e APIs que o navegador não deve ver.
@@ -57,11 +58,11 @@ const runtime = new CopilotRuntime({
     }),
   },
   // Identidade por requisição: cada usuário só vê e continua as próprias threads.
-  // DEMO: lê o header enviado pelo seletor da página. Em produção, troque por
-  // validação de sessão/JWT (ex.: cookie do NextAuth, Clerk, Auth0).
+  // O usuário vem da sessão validada em `withAuth` (cookie assinado do NextAuth).
   identifyUser: (request) => {
-    const id = request.headers.get("x-demo-user")?.trim() || "anonimo";
-    return { id, name: id };
+    const user = usersByRequest.get(request);
+    if (!user) throw new Error("Requisição sem usuário autenticado");
+    return user;
   },
 });
 
@@ -70,5 +71,17 @@ const handler = createCopilotRuntimeHandler({
   basePath: "/api/copilotkit",
 });
 
-export const GET = handler;
-export const POST = handler;
+// Valida a sessão uma vez por requisição e repassa o usuário ao identifyUser.
+const usersByRequest = new WeakMap<Request, AuthUser>();
+
+async function withAuth(request: Request): Promise<Response> {
+  const user = await currentUser();
+  if (!user) {
+    return Response.json({ error: "Não autenticado" }, { status: 401 });
+  }
+  usersByRequest.set(request, user);
+  return handler(request);
+}
+
+export const GET = withAuth;
+export const POST = withAuth;
