@@ -7,7 +7,7 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 **botloggi** (`Repositório Prado`) hosts two independent projects:
 
 - A static dashboard (`index.html`) — a single-file HTML page (Highcharts sunburst, no build step) visualizing "Como usamos IA no Viver de IA".
-- A Python CLI application (`src/botloggi/`) scaffolded with [uv](https://docs.astral.sh/uv/), pytest, and ruff. The CLI itself is currently a placeholder (`botloggi` prints a stub message) — real functionality is still to be built.
+- A Python CLI application (`src/botloggi/`) scaffolded with [uv](https://docs.astral.sh/uv/), pytest, and ruff. Its first subcommand is `botloggi report <file.csv>` (`src/botloggi/report.py`), which summarizes a CSV using only the standard library.
 
 These do not share code or build tooling — treat them as separate concerns when making changes.
 
