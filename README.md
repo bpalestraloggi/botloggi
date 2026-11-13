@@ -41,8 +41,10 @@ Ferramenta de linha de comando em Python, gerenciada com [uv](https://docs.astra
 
 ```sh
 uv sync
-uv run botloggi
+uv run botloggi report vendas.csv   # resumo do CSV: totais por coluna numérica, valores mais comuns por coluna de texto
 ```
+
+Aceita separador `,`, `;` ou tab e números no formato brasileiro (`1.234,56`).
 
 ### Development
 
